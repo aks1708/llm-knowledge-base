@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #bb86fc;
+            --accent-hover: #9965f4;
+            --button-text: #000000;
+            --input-bg: #2d2d2d;
+            --input-border: #333333;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            text-align: center;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #aaaaaa;
+            font-size: 0.9rem;
+        }
+
+        .filter-toggle {
+            display: flex;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            padding: 8px 16px;
+            background: transparent;
+            color: var(--text-color);
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-family);
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover {
+            background-color: #3a3a3a;
+        }
+
+        .filter-btn.active {
+            background-color: var(--accent-color);
+            color: var(--button-text);
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            line-height: 1.5;
+            margin: 10px 0;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-color);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: var(--font-family);
+            font-size: 1rem;
+            resize: vertical;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .options-container {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            margin: 10px 0;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            border-color: var(--accent-color);
+            background-color: #3a3a3a;
+        }
+
+        .option-label.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(187, 134, 252, 0.1);
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 12px;
+            accent-color: var(--accent-color);
+            width: 18px;
+            height: 18px;
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 1rem;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        button {
+            background-color: var(--container-bg);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-family);
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--accent-color);
+            color: var(--button-text);
+        }
+
+        button:disabled {
+            border-color: #555;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        .save-btn {
+            background-color: var(--accent-color);
+            color: var(--button-text);
+        }
+
+        .save-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .status {
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .status.visible {
+            opacity: 1;
+            color: #4caf50;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 id="quiz-title">Loading...</h1>
+
+        <div class="filter-toggle">
+            <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">All</button>
+            <button class="filter-btn" id="filter-mcq" onclick="setFilter('mcq')">MCQ</button>
+            <button class="filter-btn" id="filter-written" onclick="setFilter('written')">Written</button>
+        </div>
+
+        <div class="question-header">
+            <span id="question-progress">Question 0 of 0</span>
+        </div>
+
+        <div class="question-text" id="question-text">
+            Please wait while we load the questions.
+        </div>
+
+        <textarea id="answer-input" placeholder="Type your answer here..."></textarea>
+
+        <div class="options-container" id="options-container">
+            <!-- Multiple choice options will be dynamically inserted here -->
+        </div>
+
+        <div class="button-group">
+            <button id="prev-btn" onclick="prevQuestion()">Previous</button>
+            <button class="save-btn" id="save-btn" onclick="saveAnswer()">Save Answer</button>
+            <button id="next-btn" onclick="nextQuestion()">Next</button>
+        </div>
+
+        <div class="status" id="status-msg">Answer saved successfully!</div>
+    </div>
+
+    <script>
+        let quizData = null;
+        let currentIndex = 0;
+        let currentFilter = 'all';
+        let filteredQuestions = [];
+
+        async function loadQuiz() {
+            try {
+                const response = await fetch('/api/quiz');
+                quizData = await response.json();
+                document.getElementById('quiz-title').textContent = quizData.test_title;
+                applyFilter('all');
+            } catch (error) {
+                console.error('Error loading quiz:', error);
+                document.getElementById('quiz-title').textContent = 'Error loading quiz';
+                document.getElementById('question-text').textContent = 'Could not load quiz data.';
+            }
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            applyFilter(filter);
+        }
+
+        function applyFilter(filter) {
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`filter-${filter}`).classList.add('active');
+
+            // Filter questions
+            if (filter === 'all') {
+                filteredQuestions = quizData.questions;
+            } else if (filter === 'mcq') {
+                filteredQuestions = quizData.questions.filter(q => q.options && Array.isArray(q.options));
+            } else if (filter === 'written') {
+                filteredQuestions = quizData.questions.filter(q => !(q.options && Array.isArray(q.options)));
+            }
+
+            // Reset to first question and display
+            currentIndex = 0;
+            displayQuestion(0);
+        }
+
+        function displayQuestion(index) {
+            if (!quizData || !filteredQuestions || filteredQuestions.length === 0) return;
+
+            currentIndex = index;
+            const currentQ = filteredQuestions[currentIndex];
+
+            document.getElementById('question-progress').textContent = `Question ${currentIndex + 1} of ${filteredQuestions.length}`;
+            document.getElementById('question-text').textContent = currentQ.question;
+
+            const answerInput = document.getElementById('answer-input');
+            const optionsContainer = document.getElementById('options-container');
+
+            // Check if question has multiple choice options
+            if (currentQ.options && Array.isArray(currentQ.options)) {
+                // Multiple choice question
+                answerInput.style.display = 'none';
+                optionsContainer.style.display = 'flex';
+                renderOptions(currentQ);
+            } else {
+                // Free-form question
+                answerInput.style.display = 'block';
+                optionsContainer.style.display = 'none';
+                answerInput.value = currentQ.answer || '';
+            }
+
+            // Update button states
+            document.getElementById('prev-btn').disabled = (currentIndex === 0);
+            document.getElementById('next-btn').disabled = (currentIndex === filteredQuestions.length - 1);
+
+            // Reset status message
+            document.getElementById('status-msg').classList.remove('visible');
+        }
+
+        function renderOptions(question) {
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const label = document.createElement('label');
+                label.className = 'option-label';
+
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'answer-option';
+                radio.value = option;
+
+                // Check if this option is the saved answer
+                if (question.answer === option) {
+                    radio.checked = true;
+                    label.classList.add('selected');
+                }
+
+                radio.addEventListener('change', () => {
+                    // Remove selected class from all labels
+                    document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+                    // Add selected class to clicked label
+                    if (radio.checked) {
+                        label.classList.add('selected');
+                    }
+                });
+
+                const optionText = document.createElement('span');
+                optionText.className = 'option-text';
+                optionText.textContent = option;
+
+                label.appendChild(radio);
+                label.appendChild(optionText);
+                optionsContainer.appendChild(label);
+            });
+        }
+
+        function getSelectedAnswer() {
+            const currentQ = filteredQuestions[currentIndex];
+
+            if (currentQ.options && Array.isArray(currentQ.options)) {
+                // Multiple choice - get selected radio
+                const selected = document.querySelector('input[name="answer-option"]:checked');
+                return selected ? selected.value : '';
+            } else {
+                // Free-form - get textarea value
+                return document.getElementById('answer-input').value;
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                // Optimistically save current answer locally
+                filteredQuestions[currentIndex].answer = getSelectedAnswer();
+                displayQuestion(currentIndex - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < filteredQuestions.length - 1) {
+                // Optimistically save current answer locally
+                filteredQuestions[currentIndex].answer = getSelectedAnswer();
+                displayQuestion(currentIndex + 1);
+            }
+        }
+
+        async function saveAnswer() {
+            if (!quizData) return;
+
+            // Update current answer based on input type
+            filteredQuestions[currentIndex].answer = getSelectedAnswer();
+
+            const saveBtn = document.getElementById('save-btn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/quiz', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(quizData)
+                });
+
+                if (response.ok) {
+                    const statusMsg = document.getElementById('status-msg');
+                    statusMsg.textContent = 'Answer saved successfully!';
+                    statusMsg.classList.add('visible');
+
+                    setTimeout(() => {
+                        statusMsg.classList.remove('visible');
+                    }, 3000);
+                } else {
+                    throw new Error('Save failed');
+                }
+            } catch (error) {
+                console.error('Error saving:', error);
+                alert('Failed to save answer. Please try again.');
+            } finally {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        // Load initial data
+        loadQuiz();
+    </script>
+
+</body>
+
+</html>
