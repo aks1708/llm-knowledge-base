@@ -103,7 +103,9 @@ Use coverage indicators: mark sections as `[coverage: high|medium|low -- N sourc
 When the user asks a question:
 1. **Read** `wiki/index.md` first to locate relevant pages
 2. **Read** the specific wiki articles needed
-3. **Synthesize** an answer with citations using `[[wikilinks]]`
+3. **Synthesize** an answer with citations using `[[wikilinks]]`. Structure answers in two parts:
+   - **Technical Answer**: Precise, detailed explanation with proper terminology and depth
+   - **Layman Answer**: Concrete, accessible explanation using analogies and simple language that makes the concept tangible
 4. **Output** as markdown in `outputs/answers/` or requested format (slides, charts)
 5. **File** valuable answers back into wiki as new pages — explorations should compound
 6. **Append** entry to `wiki/log.md`: `## [YYYY-MM-DD] query | Question topic`
@@ -133,11 +135,17 @@ To generate quiz questions on a given topic:
 2. **Generate questions** — Create `{N_WRITTEN_QUESTIONS}` written questions and `{N_MCQ_QUESTIONS}` MCQ questions on `{TOPIC}`.
 
 3. **Question quality**:
-   - Test different cognitive levels: recall, understanding, application, analysis
-   - Ensure questions are specific and unambiguous
-   - Avoid yes/no questions for written format
-   - For MCQs: provide 4 options with exactly one correct answer
+   - Design open-ended, clear, and focused inquiries that promote deep thinking rather than
+   simple recall
+   - Use open questions (how, why, what) to encourage discussion and exploration
+   - Avoid leading questions that guide toward a predetermined answer
+   - Structure inquiries sequentially from simple to complex to deepen insight progressively
+   - Test different cognitive levels: recall, understanding, application, analysis, synthesis, evaluation
+   - Ensure questions are specific and unambiguous while allowing for nuanced responses
+   - Avoid yes/no questions for written format — they limit depth of response
+   - For MCQs: provide 4 options with exactly one correct answer, but design distractors that test understanding of common misconceptions
    - Reference specific wiki pages where answers can be found
+   - Questions should require connecting concepts across multiple wiki pages when appropriate
 
 4. **Structure requirements**:
    - Write to `quiz_app/test_questions.json` using `quiz_app/questions_template.json`
@@ -145,8 +153,8 @@ To generate quiz questions on a given topic:
    - Include `source_page` field indicating which wiki page contains the answer
 
 5. **Replace placeholders**:
-   - `{N_WRITTEN_QUESTIONS}`: Number of written questions (e.g., 5)
-   - `{N_MCQ_QUESTIONS}`: Number of MCQ questions (e.g., 5)
+   - `{N_WRITTEN_QUESTIONS}`: Number of written questions 
+   - `{N_MCQ_QUESTIONS}`: Number of MCQ questions
    - `{TOPIC}`: The topic to generate questions about (e.g., "attention mechanisms")
 
 ### Quiz Evaluation (Evaluating Answers)

@@ -107,19 +107,41 @@ def convert_pdf_to_markdown(pdf_path: str, output_dir: str) -> bool:
                 temp_dirs_to_cleanup.append(extracted_temp_dir)
             break
     
-    converter = create_document_converter()
+    converter = create_document_converter(generate_images=True)
     print(f"Converting to {output_filename}...")
-    
+
     try:
         # Perform the actual PDF to Markdown conversion
         result = converter.convert(temp_pdf_path)
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(result.document.export_to_markdown())
+
+        # Create images directory alongside the markdown file
+        images_dir = Path(output_dir).resolve() / f"{filename}_images"
+
+        # Save markdown with referenced images using save_as_markdown
+        # (export_to_markdown doesn't save images for referenced mode - Issue #1574)
+        result.document.save_as_markdown(
+            output_path,
+            image_mode="referenced",
+            artifacts_dir=images_dir
+        )
         print(f"Successfully converted to: {output_path}")
+        print(f"Images saved to: {images_dir}")
         
         # Cleanup temp directories regardless of success
         for temp_dir in temp_dirs_to_cleanup:
             shutil.rmtree(temp_dir, ignore_errors=True)
+        
+        # Check if images directory exists and remove if empty
+        if images_dir.exists():
+            try:
+                # Check if directory is empty (no files)
+                if not any(images_dir.iterdir()):
+                    images_dir.rmdir()
+                    print(f"Removed empty images directory: {images_dir}")
+                else:
+                    print(f"Images directory contains files, keeping: {images_dir}")
+            except OSError as e:
+                print(f"Warning: Could not remove images directory {images_dir}: {e}")
         
         return True
         
