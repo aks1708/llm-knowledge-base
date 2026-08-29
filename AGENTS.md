@@ -128,60 +128,51 @@ Periodically (or on request):
 
 ### Quiz Generation (Creating Questions)
 
-To generate quiz questions on a given topic:
+Quizzes are all-multiple-choice, run in the terminal app (`quiz_app/`). A standard quiz is **21 questions: 7 easy, 7 medium, 7 hard** unless the user specifies otherwise.
 
-1. **Read relevant wiki pages** — Read `wiki/index.md` to identify related pages, then read them comprehensively.
+To generate a quiz on a given topic:
 
-2. **Generate questions** — Create `{N_WRITTEN_QUESTIONS}` written questions and `{N_MCQ_QUESTIONS}` MCQ questions on `{TOPIC}`.
+1. **Clarify scope with the user** — A topic request like "generate a quiz on MCP" is almost always too broad to generate good questions from. Ask the user exactly what within `{TOPIC}` they want to be tested on (e.g., for MCP: architecture, transports, security, advantages/disadvantages, client vs server responsibilities). Offer the relevant sub-areas found in the wiki as selectable options, and confirm the difficulty split and question count if the user hasn't specified them. Only proceed once the scope is explicit; a vague scope produces vague questions.
 
-3. **Question quality**:
-   - Design open-ended, clear, and focused inquiries that promote deep thinking rather than
-   simple recall
-   - Use open questions (how, why, what) to encourage discussion and exploration
-   - Avoid leading questions that guide toward a predetermined answer
-   - Structure inquiries sequentially from simple to complex to deepen insight progressively
-   - Test different cognitive levels: recall, understanding, application, analysis, synthesis, evaluation
-   - Ensure questions are specific and unambiguous while allowing for nuanced responses
-   - Avoid yes/no questions for written format — they limit depth of response
-   - For MCQs: provide 4 options with exactly one correct answer, but design distractors that test understanding of common misconceptions
+2. **Read relevant wiki pages** — Read `wiki/index.md` to identify related pages, then read them comprehensively — focused on the sub-areas the user confirmed.
+
+3. **Generate questions** — Create 21 MCQ questions on `{TOPIC}` (within the confirmed sub-areas), split evenly across three difficulty tiers (easy/medium/hard), ordered easy → hard in the JSON.
+
+4. **Question quality**:
+   - **Easy (7)**: core recall and basic comprehension — definitions, key facts, simple distinctions
+   - **Medium (7)**: applied understanding — why questions, scenario mapping, distinguishing similar concepts (e.g., two risks from the same lifecycle phase)
+   - **Hard (7)**: deeper understanding — synthesis across multiple wiki pages, scenario analysis, "where does the analogy break down" reasoning, cause-effect chains, attacker-mentality questions; distractors must be genuinely plausible, not throwaway options
+   - Provide exactly 4 options with exactly one correct answer
+   - Design distractors that target common misconceptions or plausible confusions (e.g., risks from a different lifecycle phase)
+   - Never write "all of the above" or trick questions; ambiguity must be in the reasoning, not the wording
    - Reference specific wiki pages where answers can be found
-   - Questions should require connecting concepts across multiple wiki pages when appropriate
+   - Hard questions should require connecting concepts across multiple wiki pages when appropriate
 
-4. **Structure requirements**:
+5. **Structure requirements**:
    - Write to `quiz_app/test_questions.json` using `quiz_app/questions_template.json`
-   - Leave all answer fields blank
-   - Include `source_page` field indicating which wiki page contains the answer
+   - **Fill in** `answer` (letter A–D), `explanation` (why the answer is right, and why key distractors are wrong when the distinction matters), and `source_page`
+   - `difficulty` must be `easy`, `medium`, or `hard` — the terminal app sorts and scores by it
+   - Set `test_title` appropriately
 
-5. **Replace placeholders**:
-   - `{N_WRITTEN_QUESTIONS}`: Number of written questions 
-   - `{N_MCQ_QUESTIONS}`: Number of MCQ questions
+6. **Replace placeholders**:
    - `{TOPIC}`: The topic to generate questions about (e.g., "attention mechanisms")
 
 ### Quiz Evaluation (Evaluating Answers)
 
-To evaluate user answers in `quiz_app/test_questions.json`:
+The terminal app saves results to `quiz_app/results.json` after every run. To evaluate an attempt:
 
-1. **Read relevant wiki pages** — For each question, read the wiki page(s) in the `source_page` field.
+1. **Read results** — Load `quiz_app/results.json`: per-question selections, correct answers, difficulty breakdown, and score.
 
-2. **Evaluate each answer** using this framework:
-   - **Accuracy**: Factually correct based on wiki content?
-   - **Completeness**: Covers all key aspects?
-   - **Precision**: Specific and targeted?
-   - **Understanding**: Conceptual grasp or just memorization?
+2. **Read relevant wiki pages** — For missed questions, read the wiki page(s) in each question's `source_page` field.
 
-3. **Provide feedback** for each question:
-   - State correct, partially correct, or incorrect
-   - Identify gaps or misconceptions
-   - Provide a model answer with wiki citations
+3. **Explain misses** — For each incorrect answer:
+   - State what the user chose and why it is wrong (name the misconception the distractor encodes)
+   - Provide the correct reasoning with wiki citations
+   - Point to the exact wiki page(s) to review
 
-4. **Scoring**:
-   - Fully correct: All key points, no errors
-   - Partially correct: Some correct elements but misses aspects or has minor errors
-   - Incorrect: Fundamentally wrong or misses core concept
+4. **Analyze patterns** — Group misses by difficulty and theme (e.g., "all update-phase risk questions missed"). Note recurring misunderstandings, suggest wiki pages to review, recommend follow-up topics or new sources to ingest.
 
-5. **Identify patterns** — Note recurring misunderstandings, suggest wiki pages to review, recommend follow-up topics.
-
-6. **Strict knowledge boundary** — Rely exclusively on the wiki. If insufficient information, flag as "insufficient information in wiki" and suggest raw sources to ingest.
+5. **Strict knowledge boundary** — Rely exclusively on the wiki. If a question's answer isn't adequately covered by the wiki, flag it as "insufficient information in wiki" and suggest raw sources to ingest.
 
 ## Golden Rule
 
